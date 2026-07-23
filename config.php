@@ -1,8 +1,42 @@
 <?php
 
-ini_set('session.cookie_httponly', 1); // empêche JS (donc XSS) de lire le cookie
-ini_set('session.cookie_secure', 1);   // cookie envoyé seulement en HTTPS
-ini_set('session.cookie_samesite', 'Strict'); // protection CSRF
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
+require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
+
+function envoyerMailErreur($message) {
+    $to = 'contact@nathanaelle.org';
+    $subject = '[ERREUR 500] berlin.nathanaelle.org';
+    $body = $message . "\n\nURL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
+          . "\nDate: " . date('Y-m-d H:i:s');
+    send_mail($body, $variables, $subject, $to, "alertes");
+}
+
+// Erreurs fatales (fatal error, parse error, require manquant, etc.)
+register_shutdown_function(function() {
+    $error = error_get_last();
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        envoyerMailErreur($error['message'] . ' in ' . $error['file'] . ':' . $error['line']);
+        if (!headers_sent()) {
+            http_response_code(500);
+        }
+        include __DIR__ . '/errors/500.php';
+        exit;
+    }
+});
+
+// Exceptions non catchées
+set_exception_handler(function($e) {
+    envoyerMailErreur($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    http_response_code(500);
+    include __DIR__ . '/errors/500.php';
+    exit;
+});
+
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_secure', 1);
+ini_set('session.cookie_samesite', 'Strict');
 
 session_start();
 
