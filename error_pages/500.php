@@ -47,7 +47,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
     <main>
       <h2>Erreur</h2>
       <h1 class="error">500</h1>
-      Cette page s'affiche après un bug du serveur. N'hesitez pas à m'indiquer ce qui s'est produit :
+      Cette page s'affiche après un bug du serveur. N'hesitez pas à m'indiquer ce qui s'est produit (même si j'ai déjà reçus un mail avec l'erreur) :
       <a href="mailto:contact@nathanaelle.org?subject=%5BBUG%20on%20berlin.nathanaelle.org%5D">Signaler un bug</a>
     </main>
     <footer>

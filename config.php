@@ -1,5 +1,10 @@
 <?php
 
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_secure', 1);
+ini_set('session.cookie_samesite', 'Strict');
+
+session_start();
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 
@@ -29,12 +34,6 @@ set_exception_handler(function($e) {
     echo file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/error_pages/500.php');
     exit;
 });
-
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_secure', 1);
-ini_set('session.cookie_samesite', 'Strict');
-
-session_start();
 
 require 'vendor/autoload.php';
 
