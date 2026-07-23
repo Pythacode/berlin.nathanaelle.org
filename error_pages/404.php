@@ -2,8 +2,6 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 
-$result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `posts` ORDER BY `created_at` DESC");
-
 ?>
 
 <!DOCTYPE html>
