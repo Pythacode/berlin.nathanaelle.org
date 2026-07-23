@@ -9,8 +9,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 function envoyerMailErreur($message) {
     $to = 'contact@nathanaelle.org';
     $subject = '[ERREUR 500] berlin.nathanaelle.org';
-    $body = $message . "<br><br>URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
-          . "<br>Date: " . date('Y-m-d H:i:s');
+    $body = $message . "<br><br>URL : " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
+          . "<br>Date : " . date('Y-m-d H:i:s');
     send_mail($body, [], $subject, $to, "alertes");
 }
 
@@ -22,7 +22,6 @@ register_shutdown_function(function() {
         if (!headers_sent()) {
             http_response_code(500);
         }
-        include __DIR__ . '/errors/500.php';
         exit;
     }
 });
@@ -31,7 +30,6 @@ register_shutdown_function(function() {
 set_exception_handler(function($e) {
     envoyerMailErreur($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
-    include __DIR__ . '/errors/500.php';
     exit;
 });
 
