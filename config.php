@@ -11,7 +11,6 @@ function envoyerMailErreur($message) {
     send_mail($body, [], $subject, $to, "alertes");
 }
 
-// Erreurs fatales (fatal error, parse error, require manquant, etc.)
 register_shutdown_function(function() {
     $error = error_get_last();
     if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
@@ -23,7 +22,6 @@ register_shutdown_function(function() {
     }
 });
 
-// Exceptions non catchées
 set_exception_handler(function($e) {
     envoyerMailErreur($e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
