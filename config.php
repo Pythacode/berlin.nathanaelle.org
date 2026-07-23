@@ -9,8 +9,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 function envoyerMailErreur($message) {
     $to = 'contact@nathanaelle.org';
     $subject = '[ERREUR 500] berlin.nathanaelle.org';
-    $body = $message . "\n\nURL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
-          . "\nDate: " . date('Y-m-d H:i:s');
+    $body = $message . "<br><br>URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
+          . "<br>Date: " . date('Y-m-d H:i:s');
     send_mail($body, [], $subject, $to, "alertes");
 }
 
