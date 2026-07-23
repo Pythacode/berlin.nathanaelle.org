@@ -5,7 +5,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-function send_mail($template, $variables, $subject, $to, $from, $unsubscribe_link) {
+function send_mail($template, $variables, $subject, $to, $from, $unsubscribe_link=false) {
     $corps = str_replace(array_keys($variables), array_values($variables), $template);
     $fromEmail = $from . "@berlin.nathanaelle.org";
 

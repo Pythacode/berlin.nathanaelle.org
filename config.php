@@ -11,7 +11,7 @@ function envoyerMailErreur($message) {
     $subject = '[ERREUR 500] berlin.nathanaelle.org';
     $body = $message . "\n\nURL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
           . "\nDate: " . date('Y-m-d H:i:s');
-    send_mail($body, $variables, $subject, $to, "alertes");
+    send_mail($body, [], $subject, $to, "alertes");
 }
 
 // Erreurs fatales (fatal error, parse error, require manquant, etc.)
