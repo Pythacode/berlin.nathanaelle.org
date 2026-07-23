@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /new-post/
+Disallow: /unsubscribe/
+Disallow: /res/
+Disallow: /api/
+Disallow: /logout/
+Disallow: /vendor/
+
+Sitemap: https://berlin.nathanaelle.org/sitemap.xml

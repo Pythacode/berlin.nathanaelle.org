@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>Nouveau post sur 1 an à Berlin</title>
+
+  <style>
+    body, .email-bg {
+      background-color: #1a1a1a;
+      color: white;
+    }
+
+    .card {
+      background-color: #2a2a2a;
+      border: 1px solid #3a3a3a;
+    }
+
+    .btn {
+        padding: 0 5px;
+        text-decoration: none;
+        outline: none;
+        margin-bottom: 10px;
+        align-self: center;
+        border: 0;
+        border-bottom: 2px solid white;
+        transition-duration: 500ms;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        text-align: center;
+        color: white;
+    }
+
+    .btn:hover {
+        background-color: #696969;
+    }
+
+    a {
+      color: white;
+    }
+
+    * {
+        transition-duration: 500ms;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container {
+        width: 100% !important;
+      }
+    }
+
+    @font-face {
+    font-family: 'Acme';
+    src: url('/res/fonts/Acme-Regular.ttf') format('truetype');
+    }
+
+    * {
+    font-family: Acme;
+    }
+  </style>
+</head>
+<body class="email-bg" style="margin:0; padding:0; font-family:Arial, sans-serif;">
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-bg">
+    <tr>
+      <td align="center" style="padding: 20px 0;">
+
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;">
+
+          <tr>
+            <td align="center" style="padding: 20px 0;">
+              <h1>1 an à Berlin</h1>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="card" style="padding: 30px; border-radius: 8px;">
+              <h1 style="margin:0 0 16px; font-size:20px;">
+                Salut {{NAME}}!
+            </h1>
+              <p style="margin:0 0 24px; line-height:1.5;">
+                {{USER}} a posté une nouvelle photo :
+                <img style="margin: 10px;" src="{{IMG_DATA}}" alt="Photo du post">
+              </p>
+
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="https://berlin.nathanaelle.org/?post={{POST_ID}}" class="btn" style="display:inline-block; padding:12px 24px; text-decoration:none; font-weight:bold;">
+                      Ouvrir le post
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 20px; font-size:12px; color:#888888;">
+              <p style="margin:0;">© 2026 - 1 an à Berlin — <a href="{{UNSUBSRIBE_LINK}}" style="color:#888888;">Se désinscrire</a></p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

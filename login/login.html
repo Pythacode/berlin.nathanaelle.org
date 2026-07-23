@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/res/css/index.css">
+    <link rel="stylesheet" href="/res/css/signAndLogIn.css">
+    <script src="/res/js/signAndLogin.js"></script>
+    <script defer src="https://statistiques.nathanaelle.org/script.js" data-website-id="5ad832be-2b05-4147-ac62-b9978d41105a"></script>
+    <title>1 an à Berlin - Connection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <header>
+      <h1>Connection</h1>
+    </header>
+    <main>
+      <span id="error" <?php echo isset($error) ? "" : "style=\"display: none;\""; echo ">"; echo isset($error) ? $error : ""; echo "</span>"; ?>
+      <form action="/login/" method="post" id="form">
+        <label for="username">Nom d'utilisateur :</label>
+        <input type="text" name="username" id="username">
+
+        <label for="password">Mot de passe :</label>
+        <div class="input-password">
+          <input type="password" name="password" id="password">
+          <span type="button" onclick="change_type(this)" data-input-id="password">Voir</span>
+        </div>
+
+        <input type="submit" value="Valider">
+        <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '/') ?>">
+      </form>
+      <p>Pas encore inscrit.e ? <a href="/signin/?redirect=<?= htmlspecialchars($_GET['redirect'] ?? '/') ?>">Inscription</a></p>
+    </main>
+    <footer></footer>
+  </body>
+</html>

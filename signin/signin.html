@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <script src="/res/js/signin.js" defer></script>
+    <link rel="stylesheet" href="/res/css/index.css">
+    <link rel="stylesheet" href="/res/css/signAndLogIn.css">
+    <title>Inscription - 1 an à Berlin</title>
+    <script src="/res/js/signAndLogin.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script defer src="https://statistiques.nathanaelle.org/script.js" data-website-id="5ad832be-2b05-4147-ac62-b9978d41105a"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Inscription</h1>
+    </header>
+    <main>
+      <span id="error" <?php echo isset($error) ? "" : "style=\"display: none;\""; echo ">"; echo isset($error) ? $error : ""; echo "</span>"; ?>
+      <form action="/signin/" method="post" id="form">
+        <label for="username">Nom d'utilisateur :</label>
+        <input type="text" name="username" id="username">
+
+        <label for="password">Mot de passe :</label>
+        <div class="input-password">
+          <input type="password" name="password" id="password">
+          <span type="button" onclick="change_type(this)" data-input-id="password">Voir</span>
+        </div>
+
+        <label for="password-confirm">Confirmation du mot de passe :</label>
+                <div class="input-password">
+          <input type="password" name="password-confirm" id="password-confirm">
+          <span type="button" onclick="change_type(this)" data-input-id="password-confirm">Voir</span>
+        </div>
+
+        <label for="mail">Mail :</label>
+        <input type="email" name="mail" id="mail">
+
+        <div style="display: flex;">
+          <input type="checkbox" name="news" id="news" checked=true>
+          <label for="news">J'accepte de recevoir la NewsLetter</label>
+        </div>
+
+        <input type="submit" value="Valider">
+        <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '/') ?>">
+        <p>En vous inscrivant, vous acceptez les <a href="/mentions-legales/">mentions légales</a></p>
+      </form>
+      <p>Déjà inscrit.e ? <a href="/login/?redirect=<?= htmlspecialchars($_GET['redirect'] ?? '/') ?>">Connection</a></p>
+    </main>
+    <footer></footer>
+  </body>
+</html>

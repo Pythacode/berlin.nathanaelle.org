@@ -1,0 +1,97 @@
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input:not([type="password"]):not([type="text"]#password):not([type="text"]#password-confirm),
+.input-password {
+    color: white;
+    outline: none;
+    margin-bottom: 10px;
+    background-color: inherit;
+    border: 0;
+    border-bottom: 2px solid white;
+    transition-duration: 500ms;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 0 5px 0 0;
+    display: flex;
+
+    &:hover,
+    &:focus {
+        background-color: var(--hover-color);
+        & >  * {
+            background-color: var(--hover-color) !important;
+        }
+    }
+}
+
+.input-password input,
+.input-password span {
+    border: 0;
+    color: white;
+    outline: none;
+    background-color: transparent;
+    transition-duration: 500ms;
+}
+
+.input-password input {
+    border-top-left-radius: 5px;
+    flex: 1;
+}
+
+.input-password span {
+    border-top-right-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* auto-fill esquive */
+
+input:-webkit-autofill,
+input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--background-color) inset !important;
+  box-shadow: 0 0 0 1000px var(--background-color) inset !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+.input-password:hover input:-webkit-autofill,
+.input-password:hover input:autofill,
+.input-password:focus-within input:-webkit-autofill,
+.input-password:focus-within input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--hover-color) inset !important;
+  box-shadow: 0 0 0 1000px var(--hover-color) inset !important;
+}
+
+#username:hover,
+#username:focus {
+  background-color: var(--hover-color);
+}
+
+#username:-webkit-autofill,
+#username:autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--background-color) inset !important;
+  box-shadow: 0 0 0 1000px var(--background-color) inset !important;
+  -webkit-text-fill-color: white !important;
+}
+
+#username:hover:-webkit-autofill,
+#username:focus:-webkit-autofill,
+#username:hover:autofill,
+#username:focus:autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--hover-color) inset !important;
+  box-shadow: 0 0 0 1000px var(--hover-color) inset !important;
+}
+
+#error {
+    color:rgb(255, 77, 41);
+    text-decoration: underline;
+    
+}

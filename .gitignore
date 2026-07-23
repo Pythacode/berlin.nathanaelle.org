@@ -1,0 +1,8 @@
+# Dépendances
+/vendor/
+
+# Environement
+.env
+
+# Donnée
+/res/pictures/

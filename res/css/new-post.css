@@ -1,0 +1,11 @@
+.ql-toolbar svg .ql-stroke {
+  stroke: white !important;
+}
+
+* {
+    color: white;
+}
+
+input {
+    background-color: inherit;
+}

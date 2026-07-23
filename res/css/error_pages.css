@@ -1,0 +1,19 @@
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+nav {
+  background-color: var(--background-color-secondary);
+  padding: 5px 10px;
+  text-align: right;
+}
+
+main h2 {
+    font-size: 3rem;
+}
+
+main h1 {
+    font-size: 5rem;
+}
