@@ -11,7 +11,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
     <title>1 an à Berlin</title>
     <link rel="stylesheet" href="/res/css/index.css">
     <link rel="stylesheet" href="/res/css/error_pages.css">
-    <script src="/res/js/home.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script defer src="https://statistiques.nathanaelle.org/script.js" data-website-id="5ad832be-2b05-4147-ac62-b9978d41105a"></script>
   </head>
