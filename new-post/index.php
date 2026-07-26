@@ -3,6 +3,64 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 
+function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
+    $mime = mime_content_type($path);
+
+    switch ($mime) {
+        case 'image/jpeg':
+            $src = imagecreatefromjpeg($path);
+            break;
+        case 'image/png':
+            $src = imagecreatefrompng($path);
+            break;
+        case 'image/webp':
+            $src = imagecreatefromwebp($path);
+            break;
+        case 'image/gif':
+            $src = imagecreatefromgif($path);
+            break;
+        default:
+            throw new Exception("Format non supporté : $mime");
+    }
+
+    $origWidth = imagesx($src);
+    $origHeight = imagesy($src);
+
+    // Ratio de redimensionnement (ne pas agrandir si déjà petite)
+    $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight, 1);
+    $newWidth = (int) round($origWidth * $ratio);
+    $newHeight = (int) round($origHeight * $ratio);
+
+    $dst = imagecreatetruecolor($newWidth, $newHeight);
+
+    // Préserver la transparence pour PNG/GIF
+    if ($mime === 'image/png' || $mime === 'image/gif') {
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        $transparent = imagecolorallocatealpha($dst, 255, 255, 255, 127);
+        imagefilledrectangle($dst, 0, 0, $newWidth, $newHeight, $transparent);
+    }
+
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+    // Encoder en JPEG pour réduire le poids (sauf si transparence nécessaire → PNG)
+    ob_start();
+    if ($mime === 'image/png' || $mime === 'image/gif') {
+        imagepng($dst, null, 6);
+        $outMime = 'image/png';
+    } else {
+        imagejpeg($dst, null, $quality);
+        $outMime = 'image/jpeg';
+    }
+    $data = ob_get_clean();
+
+    imagedestroy($src);
+    imagedestroy($dst);
+
+    $base64 = base64_encode($data);
+    return "data:{$outMime};base64,{$base64}";
+}
+
 if (!isset($_SESSION['id'])) {
     header('Location: /login/?redirect=/new-post/');
     exit;
@@ -47,12 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $stmt->close();
         
         if($retour) {
-            
-            $data = file_get_contents($AbsoluteUploadDir . $file);
-            $mime = mime_content_type($AbsoluteUploadDir . $file);
-            $base64 = base64_encode($data);
-            
-            $img_data = "data:{$mime};base64,{$base64}";
+            $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
             
             $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
             
