@@ -18,7 +18,7 @@ main {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  grid-auto-rows: minmax(100px, 200px);
+  grid-auto-rows: repeat(auto-fit, minmax(100px, 1fr));
   background-image: url('/res/img/background1.jpg');
   background-size: contain;
   background-repeat: no-repeat;
@@ -63,6 +63,7 @@ main {
 }
 
 .fenetreModal {
+    width: 35vw;
     z-index:99999;
     display:none;
     align-items:center;
@@ -78,8 +79,6 @@ main {
 }
 
 .fenetreModal img {
-    width: 25vw;
-    overflow:hidden;
     padding: 10px;
 }
 
