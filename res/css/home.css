@@ -17,6 +17,7 @@ nav {
 main {
   display: grid;
   gap: 10px;
+  
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   grid-auto-rows: repeat(auto-fit, minmax(100px, 1fr));
   background-image: url('/res/img/background.png');
