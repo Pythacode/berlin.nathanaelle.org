@@ -208,3 +208,9 @@ footer {
     padding-bottom: 10px;
     text-align: center;
 }
+
+@media (max-width: 480px) {
+    .fenetreModal {
+        width: 95vw;
+    }
+}
