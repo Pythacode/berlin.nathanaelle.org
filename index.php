@@ -203,7 +203,7 @@ $result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `pos
       <p id="newsletter-message"></p>
       <p>En vous inscrivant à la newsletter, vous acceptez les <a href="/mentions-legales/">mentions légales</a></p>
       <?php
-      if (isset($_SESSION['id']) && $_SESSION['admin']) {
+      if (!isset($_SESSION['id'])) {
         ?>
         <p>Ou <a href="/signin">créez-vous un compte</a></p>
         <?php
