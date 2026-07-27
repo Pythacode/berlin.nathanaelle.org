@@ -61,6 +61,58 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
     return "data:{$outMime};base64,{$base64}";
 }
 
+function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
+    $mime = mime_content_type($srcPath);
+
+    switch ($mime) {
+        case 'image/jpeg':
+            $src = imagecreatefromjpeg($srcPath);
+            break;
+        case 'image/png':
+            $src = imagecreatefrompng($srcPath);
+            break;
+        case 'image/webp':
+            $src = imagecreatefromwebp($srcPath);
+            break;
+        case 'image/gif':
+            $src = imagecreatefromgif($srcPath);
+            break;
+        default:
+            throw new Exception("Format non supporté : $mime");
+    }
+
+    $origWidth = imagesx($src);
+    $origHeight = imagesy($src);
+
+    if ($origWidth <= $maxWidth) {
+        $newWidth = $origWidth;
+        $newHeight = $origHeight;
+    } else {
+        $newWidth = $maxWidth;
+        $newHeight = (int) round($origHeight * ($maxWidth / $origWidth));
+    }
+
+    $dst = imagecreatetruecolor($newWidth, $newHeight);
+
+    // Préserver transparence si PNG
+    if ($mime === 'image/png') {
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        $transparent = imagecolorallocatealpha($dst, 255, 255, 255, 127);
+        imagefilledrectangle($dst, 0, 0, $newWidth, $newHeight, $transparent);
+    }
+
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+    imagewebp($dst, $destPath, $quality);
+
+    imagedestroy($src);
+    imagedestroy($dst);
+
+    return $destPath;
+}
+
+
 if (!isset($_SESSION['id'])) {
     header('Location: /login/?redirect=/new-post/');
     exit;
@@ -91,9 +143,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $filename = $infos['filename'] . '_';
         $extension = $infos['extension'];
         
-        $file = uniqid($filename) . '.' . $extension;
+        $file = uniqid($filename) . ".webp";
 
-        $retour = copy($_FILES['photo']['tmp_name'], $AbsoluteUploadDir . $file);
+        resizeAndSave($_FILES['photo']['tmp_name'], $AbsoluteUploadDir . $file, 800, 75);
 
         $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("siisi", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"]);
@@ -103,48 +155,46 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $postId = $conn->insert_id;
 
         $stmt->close();
+    
+        $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
         
-        if($retour) {
-            $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
+        $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
+        
+        $result = $conn->query("SELECT `username`, `email` FROM `users` WHERE `news` = 1");
+        foreach ($result as $row) {
             
-            $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
+            $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
             
-            $result = $conn->query("SELECT `username`, `email` FROM `users` WHERE `news` = 1");
-            foreach ($result as $row) {
-                
-                $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
-                
-                $variables = [
-                    '{{NAME}}' => htmlspecialchars($row["username"]) . ' ',
-                    '{{USER}}' => $_SESSION['username'],
-                    '{{POST_ID}}' => $postId,
-                    '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
-                    '{{IMG_DATA}}' => $img_data,
+            $variables = [
+                '{{NAME}}' => htmlspecialchars($row["username"]) . ' ',
+                '{{USER}}' => $_SESSION['username'],
+                '{{POST_ID}}' => $postId,
+                '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
+                '{{IMG_DATA}}' => $img_data,
+            ];
+            
+            send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
+            
+        }
+
+        $result = $conn->query("SELECT `email` FROM `newsletter`");
+        foreach ($result as $row) {
+            
+            $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
+            
+            $variables = [
+                '{{NAME}}' => '',
+                '{{USER}}' => $_SESSION['username'],
+                '{{POST_ID}}' => $postId,
+                '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
+                '{{IMG_DATA}}' => $img_data,
                 ];
                 
-                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
-                
-            }
-
-            $result = $conn->query("SELECT `email` FROM `newsletter`");
-            foreach ($result as $row) {
-                
-                $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
-                
-                $variables = [
-                    '{{NAME}}' => '',
-                    '{{USER}}' => $_SESSION['username'],
-                    '{{POST_ID}}' => $postId,
-                    '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
-                    '{{IMG_DATA}}' => $img_data,
-                    ];
-                    
-                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
-            }
-            
-            $conn->close();
-            header('Location: /?post=' . $postId);
+            send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
         }
+        
+        $conn->close();
+        header('Location: /?post=' . $postId);
     }
 }
 ?>

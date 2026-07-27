@@ -159,7 +159,7 @@ $result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `pos
             <?php
           } else {
             foreach ($result as $row) {
-                echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . "\">";
+                echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . "\" loading=\"lazy\">";
             }
           }
         ?>
@@ -202,7 +202,13 @@ $result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `pos
       </form>
       <p id="newsletter-message"></p>
       <p>En vous inscrivant à la newsletter, vous acceptez les <a href="/mentions-legales/">mentions légales</a></p>
-      <p>Ou <a href="/signin">créez-vous un compte</a></p>
+      <?php
+      if (isset($_SESSION['id']) && $_SESSION['admin']) {
+        ?>
+        <p>Ou <a href="/signin">créez-vous un compte</a></p>
+        <?php
+      }
+      ?>
       <a href="/mentions-legales/">Mentions légales</a>
       <a href="mailto:contact@nathanaelle.org?subject=%5BBUG%20on%20berlin.nathanaelle.org%5D">Signaler un bug</a>
       <script>
