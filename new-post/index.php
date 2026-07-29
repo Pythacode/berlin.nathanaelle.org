@@ -4,58 +4,51 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 
 function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
-    $mime = mime_content_type($path);
-
-    switch ($mime) {
-        case 'image/jpeg':
-            $src = imagecreatefromjpeg($path);
-            break;
-        case 'image/png':
-            $src = imagecreatefrompng($path);
-            break;
-        case 'image/webp':
-            $src = imagecreatefromwebp($path);
-            break;
-        case 'image/gif':
-            $src = imagecreatefromgif($path);
-            break;
-        default:
-            throw new Exception("Format non supporté : $mime");
+    if (!extension_loaded('imagick')) {
+        throw new Exception("Extension Imagick non disponible.");
     }
 
-    $origWidth = imagesx($src);
-    $origHeight = imagesy($src);
+    $img = new Imagick($path);
+
+    // Corrige l'orientation EXIF si présente (gère aussi le cas où webp n'en a pas)
+    $img->autoOrientImage();
+
+    // Aplati les frames (webp animé) sur la première frame
+    if ($img->getNumberImages() > 1) {
+        $img = $img->coalesceImages();
+        $img = $img->getImage(); // ne garde que la première frame
+    }
+
+    $origWidth  = $img->getImageWidth();
+    $origHeight = $img->getImageHeight();
 
     // Ratio de redimensionnement (ne pas agrandir si déjà petite)
     $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight, 1);
-    $newWidth = (int) round($origWidth * $ratio);
+    $newWidth  = (int) round($origWidth * $ratio);
     $newHeight = (int) round($origHeight * $ratio);
 
-    $dst = imagecreatetruecolor($newWidth, $newHeight);
+    $img->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
 
-    // Préserver la transparence pour PNG/GIF
-    if ($mime === 'image/png' || $mime === 'image/gif') {
-        imagealphablending($dst, false);
-        imagesavealpha($dst, true);
-        $transparent = imagecolorallocatealpha($dst, 255, 255, 255, 127);
-        imagefilledrectangle($dst, 0, 0, $newWidth, $newHeight, $transparent);
-    }
+    // Préserve la transparence si présente
+    $hasAlpha = $img->getImageAlphaChannel();
 
-    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
-
-    // Encoder en JPEG pour réduire le poids (sauf si transparence nécessaire → PNG)
-    ob_start();
-    if ($mime === 'image/png' || $mime === 'image/gif') {
-        imagepng($dst, null, 6);
+    if ($hasAlpha) {
+        $img->setImageFormat('png');
+        $img->setImageCompressionQuality(80); // ignoré par PNG mais inoffensif
         $outMime = 'image/png';
     } else {
-        imagejpeg($dst, null, $quality);
+        $img->setImageFormat('jpeg');
+        $img->setImageCompressionQuality($quality);
+        $img->setImageBackgroundColor('white');
+        $img = $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
         $outMime = 'image/jpeg';
     }
-    $data = ob_get_clean();
 
-    imagedestroy($src);
-    imagedestroy($dst);
+    // Nettoie les métadonnées EXIF restantes (poids + vie privée)
+    $img->stripImage();
+
+    $data = $img->getImageBlob();
+    $img->destroy();
 
     $base64 = base64_encode($data);
     return "data:{$outMime};base64,{$base64}";
