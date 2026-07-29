@@ -16,13 +16,23 @@
             Nouveau post
         </header>
         <form action="/new-post/" method="post" enctype="multipart/form-data" id="form">
-            <input type="file" name="photo">
+            <input type="file" name="photo" id="picture">
+            <img src="" alt="" id="img">
+            <div>
+                <button onclick="turn(-90)" type="button">Tourner à gauche</button>
+                <button onclick="turn(90)" type="button">Tourner à droite</button>
+            </div>
+            <input type="hidden" name="rotate" id="rotate">
             <div id="description"></div>
             <input type="hidden" name="description">
             <label for="height">Hauteur (en case)</label>
             <input type="number" name="height" id="height" value="1" min="1" step="1" max="5" placeholder="Valeur entre 1 & 5">
             <label for="width">Largeur (en case)</label>
             <input type="number" name="width" id="width" value="1" min="1" step="1" max="5" placeholder="Valeur entre 1 & 5">
+            <div style="display: flex;">
+                <input type="checkbox" name="new" id="news" checked=true>
+                <label for="new">Envoyer la NewsLetter</label>
+            </div>
             <input type="submit">
         </form>
     </body>

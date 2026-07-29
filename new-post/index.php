@@ -63,27 +63,13 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
 
 function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
     $mime = mime_content_type($srcPath);
-
-    switch ($mime) {
-        case 'image/jpeg':
-            $src = imagecreatefromjpeg($srcPath);
-            break;
-        case 'image/png':
-            $src = imagecreatefrompng($srcPath);
-            break;
-        case 'image/webp':
-            $src = imagecreatefromwebp($srcPath);
-            break;
-        case 'image/gif':
-            $src = imagecreatefromgif($srcPath);
-            break;
-        default:
-            throw new Exception("Format non supporté : $mime");
-    }
-
-    $origWidth = imagesx($src);
-    $origHeight = imagesy($src);
-
+    
+    $image = new Imagick($srcPath);
+    
+    // Calcul des nouvelles dimensions
+    $origWidth = $image->getImageWidth();
+    $origHeight = $image->getImageHeight();
+    
     if ($origWidth <= $maxWidth) {
         $newWidth = $origWidth;
         $newHeight = $origHeight;
@@ -91,27 +77,39 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
         $newWidth = $maxWidth;
         $newHeight = (int) round($origHeight * ($maxWidth / $origWidth));
     }
-
-    $dst = imagecreatetruecolor($newWidth, $newHeight);
-
-    // Préserver transparence si PNG
-    if ($mime === 'image/png') {
-        imagealphablending($dst, false);
-        imagesavealpha($dst, true);
-        $transparent = imagecolorallocatealpha($dst, 255, 255, 255, 127);
-        imagefilledrectangle($dst, 0, 0, $newWidth, $newHeight, $transparent);
-    }
-
-    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
-
-    imagewebp($dst, $destPath, $quality);
-
-    imagedestroy($src);
-    imagedestroy($dst);
-
+    
+    // Redimensionnement avec filtrage de haute qualité
+    $image->thumbnailImage($newWidth, $newHeight);
+    
+    // Conversion explicite en WebP pour la sortie
+    $image->setImageFormat('webp');
+    $image->setImageCompressionQuality($quality);
+    
+    // Sauvegarde
+    $image->writeImage($destPath);
+    $image->clear();
+    $image->destroy();
+    
     return $destPath;
 }
 
+function rotate($img, $rotate) {
+    $image = new Imagick($img);
+
+    $image->rotateImage('none', $rotate);
+    
+    $image->resetIterator();
+
+    // 5. Définir le format de sortie sur WebP
+    $image->setImageFormat('webp');
+
+    // 6. Sauvegarder le résultat
+    $image->writeImage($img);
+
+    // 7. Nettoyage mémoire
+    $image->clear();
+    $image->destroy();
+}
 
 if (!isset($_SESSION['id'])) {
     header('Location: /login/?redirect=/new-post/');
@@ -146,54 +144,61 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $file = uniqid($filename) . ".webp";
 
         resizeAndSave($_FILES['photo']['tmp_name'], $AbsoluteUploadDir . $file, 800, 75);
-
-        $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("siisi", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"]);
-
-        $stmt->execute();
-
-        $postId = $conn->insert_id;
-
-        $stmt->close();
-    
-        $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
         
-        $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
-        
-        $result = $conn->query("SELECT `username`, `email` FROM `users` WHERE `news` = 1");
-        foreach ($result as $row) {
-            
-            $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
-            
-            $variables = [
-                '{{NAME}}' => htmlspecialchars($row["username"]) . ' ',
-                '{{USER}}' => $_SESSION['username'],
-                '{{POST_ID}}' => $postId,
-                '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
-                '{{IMG_DATA}}' => $img_data,
-            ];
-            
-            send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
-            
-        }
+        rotate($AbsoluteUploadDir . $file, $_POST["rotate"]);
 
-        $result = $conn->query("SELECT `email` FROM `newsletter`");
-        foreach ($result as $row) {
+        $new = $_POST['new'] == "on" ? 1 : 0;
+
+        if ($new) {
+
+            $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("siisi", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"]);
+
+            $stmt->execute();
+
+            $postId = $conn->insert_id;
+
+            $stmt->close();
+        
+            $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
             
-            $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
+            $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
             
-            $variables = [
-                '{{NAME}}' => '',
-                '{{USER}}' => $_SESSION['username'],
-                '{{POST_ID}}' => $postId,
-                '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
-                '{{IMG_DATA}}' => $img_data,
+            $result = $conn->query("SELECT `username`, `email` FROM `users` WHERE `news` = 1");
+            foreach ($result as $row) {
+                
+                $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
+                
+                $variables = [
+                    '{{NAME}}' => htmlspecialchars($row["username"]) . ' ',
+                    '{{USER}}' => $_SESSION['username'],
+                    '{{POST_ID}}' => $postId,
+                    '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
+                    '{{IMG_DATA}}' => $img_data,
                 ];
                 
-            send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
+                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
+                
+            }
+
+            $result = $conn->query("SELECT `email` FROM `newsletter`");
+            foreach ($result as $row) {
+                
+                $unsubscribe_link = "https://berlin.nathanaelle.org/unsubscribe/?mail=" . htmlspecialchars($row['email']);
+                
+                $variables = [
+                    '{{NAME}}' => '',
+                    '{{USER}}' => $_SESSION['username'],
+                    '{{POST_ID}}' => $postId,
+                    '{{UNSUBSRIBE_LINK}}' => $unsubscribe_link,
+                    '{{IMG_DATA}}' => $img_data,
+                    ];
+                    
+                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
+            }
+            
+            $conn->close();
         }
-        
-        $conn->close();
         header('Location: /?post=' . $postId);
     }
 }

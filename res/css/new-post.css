@@ -9,3 +9,17 @@
 input {
     background-color: inherit;
 }
+
+button {
+    color: black;
+}
+
+img {
+    max-width: min(300px, 90vw);
+    height: auto;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
