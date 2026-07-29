@@ -64,11 +64,12 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
 function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
     $mime = mime_content_type($srcPath);
     
-    $image = new Imagick($srcPath);
+    $img = new Imagick($srcPath);
+    $img->autoOrientImage();
     
     // Calcul des nouvelles dimensions
-    $origWidth = $image->getImageWidth();
-    $origHeight = $image->getImageHeight();
+    $origWidth = $img->getImageWidth();
+    $origHeight = $img->getImageHeight();
     
     if ($origWidth <= $maxWidth) {
         $newWidth = $origWidth;
@@ -79,36 +80,36 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
     }
     
     // Redimensionnement avec filtrage de haute qualité
-    $image->thumbnailImage($newWidth, $newHeight);
+    $img->thumbnailImage($newWidth, $newHeight);
     
     // Conversion explicite en WebP pour la sortie
-    $image->setImageFormat('webp');
-    $image->setImageCompressionQuality($quality);
+    $img->setImageFormat('webp');
+    $img->setImageCompressionQuality($quality);
     
     // Sauvegarde
-    $image->writeImage($destPath);
-    $image->clear();
-    $image->destroy();
+    $img->writeImage($destPath);
+    $img->clear();
+    $img->destroy();
     
     return $destPath;
 }
 
-function rotate($img, $rotate) {
-    $image = new Imagick($img);
+function rotate($img_path, $rotate) {
+    $img = new Imagick($img_path);
 
-    $image->rotateImage('none', $rotate);
+    $img->rotateImage('none', $rotate);
     
-    $image->resetIterator();
+    $img->resetIterator();
 
     // 5. Définir le format de sortie sur WebP
-    $image->setImageFormat('webp');
+    $img->setImageFormat('webp');
 
     // 6. Sauvegarder le résultat
-    $image->writeImage($img);
+    $img->writeImage($img);
 
     // 7. Nettoyage mémoire
-    $image->clear();
-    $image->destroy();
+    $img->clear();
+    $img->destroy();
 }
 
 if (!isset($_SESSION['id'])) {
