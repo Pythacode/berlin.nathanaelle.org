@@ -149,16 +149,16 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         $new = $_POST['new'] == "on" ? 1 : 0;
 
+        $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("siisi", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"]);
+
+        $stmt->execute();
+
+        $postId = $conn->insert_id;
+
+        $stmt->close();
+
         if ($new) {
-
-            $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`) VALUES (?, ?, ?, ?, ?)");
-            $stmt->bind_param("siisi", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"]);
-
-            $stmt->execute();
-
-            $postId = $conn->insert_id;
-
-            $stmt->close();
         
             $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
             
@@ -197,8 +197,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
             }
             
-            $conn->close();
         }
+        $conn->close();
         header('Location: /?post=' . $postId);
     }
 }
