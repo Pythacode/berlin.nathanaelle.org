@@ -94,8 +94,8 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
     $mime = mime_content_type($srcPath);
     
     $img = new Imagick($srcPath);
-    $img->autoOrientImage();
-    
+    //$img->autoOrientImage();
+    autoOrient($img,$srcPath);
     // Calcul des nouvelles dimensions
     $origWidth = $img->getImageWidth();
     $origHeight = $img->getImageHeight();
