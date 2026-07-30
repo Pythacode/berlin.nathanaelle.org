@@ -3,6 +3,41 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 
+function autoOrient(Imagick $image, string $filepath): void {
+    $exif = @exif_read_data($filepath);
+    if (!$exif || !isset($exif['Orientation'])) {
+        return;
+    }
+
+    switch ($exif['Orientation']) {
+        case 2:
+            $image->flipImage();
+            break;
+        case 3:
+            $image->rotateImage('#000000', 180);
+            break;
+        case 4:
+            $image->flopImage();
+            break;
+        case 5:
+            $image->flipImage();
+            $image->rotateImage('#000000', 90);
+            break;
+        case 6:
+            $image->rotateImage('#000000', 90);
+            break;
+        case 7:
+            $image->flopImage();
+            $image->rotateImage('#000000', 270);
+            break;
+        case 8:
+            $image->rotateImage('#000000', 270);
+            break;
+    }
+    // Ne pas oublier de reset l'orientation EXIF sinon certains viewers re-tournent l'image
+    $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+}
+
 function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
     if (!extension_loaded('imagick')) {
         throw new Exception("Extension Imagick non disponible.");
@@ -11,7 +46,8 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
     $img = new Imagick($path);
 
     // Corrige l'orientation EXIF si présente (gère aussi le cas où webp n'en a pas)
-    $img->autoOrientImage();
+    //$img->autoOrientImage();
+    autoOrient($img,$path)
 
     // Aplati les frames (webp animé) sur la première frame
     if ($img->getNumberImages() > 1) {
