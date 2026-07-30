@@ -47,7 +47,7 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
 
     // Corrige l'orientation EXIF si présente (gère aussi le cas où webp n'en a pas)
     //$img->autoOrientImage();
-    autoOrient($img,$path)
+    autoOrient($img,$path);
 
     // Aplati les frames (webp animé) sur la première frame
     if ($img->getNumberImages() > 1) {
