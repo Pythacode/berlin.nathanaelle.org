@@ -134,7 +134,7 @@ function rotate($img_path, $rotate) {
     $img->setImageFormat('webp');
 
     // 6. Sauvegarder le résultat
-    $img->writeImage($img);
+    $img->writeImage($img_path);
 
     // 7. Nettoyage mémoire
     $img->clear();
