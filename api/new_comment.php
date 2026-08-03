@@ -1,7 +1,7 @@
 <?php
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/config.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 
 if (!isset($_SESSION['id'])) {
     http_response_code(401);
