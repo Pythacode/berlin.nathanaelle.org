@@ -1,5 +1,15 @@
 <?php
 
+session_set_cookie_params([
+    'lifetime' => time() + 60 * 60 * 24 * 30,
+    'path' => '/',
+    'secure' => true,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+
+session_start();
+
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 1);
 ini_set('session.cookie_samesite', 'Strict');

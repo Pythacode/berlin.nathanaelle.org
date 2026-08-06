@@ -73,14 +73,13 @@ main {
     transform: translate(-50%,-50%);
     background-color: var(--background-color-secondary);
     border-radius: 10px;
-    margin: 10px;
     max-height: 80vh;
     overflow: auto;
 }
 
 .fenetreModal img {
     padding: 10px;
-    width: 25vw;
+    width: 90%;
 }
 
 #heart {
@@ -200,6 +199,11 @@ form.comment {
         border: none;
         cursor: pointer;
     }
+}
+
+.desc p {
+    padding: 0 10px;
+    text-align: justify;
 }
 
 footer {
