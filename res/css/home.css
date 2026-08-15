@@ -161,7 +161,7 @@ footer .newsletter {
     flex-direction: column;
     overflow-y: auto;
     padding: 5px 10px;
-    min-height: 50px;
+    min-height: 80px;
 }
 
 .comments div {
