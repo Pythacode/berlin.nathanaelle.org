@@ -25,8 +25,8 @@ while ($row = $result->fetch_assoc()) {
     <style>
       <?php 
         foreach ($users as $user) {
-            echo "." . $user[0] . " {border-color:" . $user[1] . ";border-radius: 5px;}";
-            echo "." . $user[0] . ":hover {border: 5px solid " . $user[1] . ";border-radius: 5px;}";
+            echo "." . $user[0] . " {border-radius: 5px;}";
+            echo "." . $user[0] . ":hover {box-shadow: 0 0 10px 1px " . $user[1] . ";}";
         }
       ?>
     </style>
