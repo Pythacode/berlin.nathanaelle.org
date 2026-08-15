@@ -63,7 +63,7 @@ main {
     display:none;
 }
 
-.fenetreModal {
+#fenetreModal {
     width: 35vw;
     z-index:99999;
     display:none;
@@ -79,7 +79,7 @@ main {
     overflow: auto;
 }
 
-.fenetreModal img {
+#fenetreModal img {
     padding: 10px;
     width: 90%;
 }
@@ -214,7 +214,7 @@ footer {
 }
 
 @media (max-width: 480px) {
-    .fenetreModal {
+    #fenetreModal {
         width: 90vw;
     }
 }

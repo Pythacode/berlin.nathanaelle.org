@@ -27,6 +27,7 @@ while ($row = $result->fetch_assoc()) {
         foreach ($users as $user) {
             echo "." . $user[0] . " {border-radius: 5px;}";
             echo "." . $user[0] . ":hover {box-shadow: 0 0 10px 1px " . $user[1] . ";}";
+            echo "." . $user[0] . "-overlay {box-shadow: 0 0 200px 10vh " . $user[1] . ";}";
         }
       ?>
     </style>

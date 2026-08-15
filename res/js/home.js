@@ -107,6 +107,7 @@ async function display_post(id) {
     overlay.style.display = 'block';
     quitIcon.style.display = 'block';
     fenetreModal.style.display = 'flex';
+    fenetreModal.classList = data["user"]+"-overlay";
 
   } catch (err) {
     console.error(err);
