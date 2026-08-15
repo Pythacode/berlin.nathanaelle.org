@@ -2,8 +2,14 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 
-$result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `posts` ORDER BY `created_at` DESC");
+$posts = $conn->query("SELECT `id`, `picture_name`, `width`, `height`, `user_id` FROM `posts` ORDER BY `created_at` DESC");
+$users = [];
 
+$result = $conn->query("SELECT `id`, `username`, `color` FROM `users` WHERE admin = 1");
+
+while ($row = $result->fetch_assoc()) {
+    $users[$row['id']] = [$row['username'], $row['color']];
+}
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +22,13 @@ $result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `pos
     <script src="/res/js/home.js" defer></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script defer src="https://statistiques.nathanaelle.org/script.js" data-website-id="5ad832be-2b05-4147-ac62-b9978d41105a"></script>
+    <style>
+      <?php 
+        foreach ($users as $user) {
+            echo "." . $user[0] . "{border: 5px solid " . $user[1] . ";border-radius: 5px;}";
+        }
+      ?>
+    </style>
   </head>
   <body>
     <header>
@@ -158,8 +171,8 @@ $result = $conn->query("SELECT `id`, `picture_name`, `width`, `height` FROM `pos
             </script>
             <?php
           } else {
-            foreach ($result as $row) {
-                echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . "\" loading=\"lazy\">";
+            foreach ($posts as $row) {
+                echo "<img id=\"" . $row["id"] . "\" class=\"" . $users[$row["user_id"]][0] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . "\" loading=\"lazy\">";
             }
           }
         ?>
