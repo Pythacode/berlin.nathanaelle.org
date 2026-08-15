@@ -172,7 +172,7 @@ while ($row = $result->fetch_assoc()) {
             <?php
           } else {
             foreach ($posts as $row) {
-                echo "<img id=\"" . $row["id"] . "\" class=\"" . $users[$row["user_id"]][0] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . "\" loading=\"lazy\">";
+                echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
             }
           }
         ?>
