@@ -22,7 +22,6 @@ function send_mail($template, $variables, $subject, $to, $from, $unsubscribe_lin
         $mail->CharSet = 'UTF-8';
 
         $mail->setFrom($fromEmail, "1 an à Berlin newsletter");
-        $mail->addReplyTo('contact@nathanaelle.org');
         $mail->addAddress($to);
 
         if ($unsubscribe_link) {
