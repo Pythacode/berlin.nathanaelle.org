@@ -178,6 +178,8 @@ while ($row = $result->fetch_assoc()) {
                 echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
               } else if ($row['type'] == "video") {
                 echo "<video id=\"" . $row["id"] . "\" src=\"/res/video/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\" controls></video>";
+              } else {
+                echo $row["type"];
               }
             }
           }
