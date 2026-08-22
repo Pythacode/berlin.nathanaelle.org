@@ -174,7 +174,7 @@ while ($row = $result->fetch_assoc()) {
             <?php
           } else {
             foreach ($posts as $row) {
-                echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
+                echo "<" . $row["type"] . " id=\"" . $row["id"] . "\" src=\"/res/" . $row["type"] == "img" ? "pictures" : "videos" . "/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
             }
           }
         ?>
