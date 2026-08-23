@@ -208,39 +208,92 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
      * VIDEO WEBM
      * =========================
      */
+    
     if (str_starts_with($mime, 'video/')) {
 
         $destPath .= '.webm';
 
-        $video = new Imagick($srcPath);
+        $ffprobe = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffprobe';
+        $ffmpeg  = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffmpeg';
 
-        $origWidth  = $video->getImageWidth();
-        $origHeight = $video->getImageHeight();
+        /*
+         * Récupération des dimensions
+         */
+        $cmd = sprintf(
+            '%s -v error -select_streams v:0 ' .
+            '-show_entries stream=width,height ' .
+            '-of csv=p=0:s=x %s 2>&1',
+            escapeshellarg($ffprobe),
+            escapeshellarg($srcPath)
+        );
 
+        $dimensions = trim(shell_exec($cmd));
+
+        if (!preg_match('/^(\d+)x(\d+)$/', $dimensions, $matches)) {
+            throw new Exception(
+                "Impossible de récupérer les dimensions de la vidéo. " .
+                "ffprobe : " . $dimensions
+            );
+        }
+
+        $origWidth  = (int) $matches[1];
+        $origHeight = (int) $matches[2];
+
+        /*
+         * Calcul de la taille
+         */
         if ($origWidth > $maxWidth) {
+
             $newWidth  = $maxWidth;
             $newHeight = (int) round(
                 $origHeight * ($maxWidth / $origWidth)
             );
 
-            /*
-             * Redimensionne toutes les frames
-             */
-            foreach ($video as $frame) {
-                $frame->thumbnailImage(
-                    $newWidth,
-                    $newHeight
-                );
-            }
+            // Dimensions paires
+            $newWidth  -= $newWidth % 2;
+            $newHeight -= $newHeight % 2;
+
+            $scale = "scale={$newWidth}:{$newHeight}";
+
+        } else {
+
+            $scale = "scale={$origWidth}:{$origHeight}";
         }
 
-        $video->setImageFormat('webm');
-        $video->setImageCompressionQuality($quality);
+        /*
+         * Qualité
+         *
+         * quality 75 => CRF environ 30
+         */
+        $crf = (int) round(45 - ($quality * 0.2));
+        $crf = max(10, min(40, $crf));
 
-        $video->writeImages($destPath, true);
+        /*
+         * Conversion WebM
+         */
+        $cmd = sprintf(
+            '%s -y -i %s ' .
+            '-vf %s ' .
+            '-c:v libvpx-vp9 ' .
+            '-crf %d -b:v 0 ' .
+            '-c:a libopus -b:a 128k ' .
+            '%s 2>&1',
 
-        $video->clear();
-        $video->destroy();
+            escapeshellarg($ffmpeg),
+            escapeshellarg($srcPath),
+            escapeshellarg($scale),
+            $crf,
+            escapeshellarg($destPath)
+        );
+
+        exec($cmd, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            throw new Exception(
+                "Erreur FFmpeg :\n" .
+                implode("\n", $output)
+            );
+        }
 
         return $destPath;
     }
