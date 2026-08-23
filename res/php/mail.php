@@ -5,12 +5,13 @@ require $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-function send_mail($template, $variables, $subject, $to, $from, $unsubscribe_link=false) {
+function send_mail($template, $variables, $subject, $to, $from, $fromName, $unsubscribe_link=false) {
     $corps = str_replace(array_keys($variables), array_values($variables), $template);
     $fromEmail = $from . "@berlin.nathanaelle.org";
 
     $mail = new PHPMailer(true);
 
+    
     try {
         $mail->isSMTP();
         $mail->Host = 'mail.infomaniak.com';
@@ -20,10 +21,10 @@ function send_mail($template, $variables, $subject, $to, $from, $unsubscribe_lin
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
         $mail->CharSet = 'UTF-8';
-
-        $mail->setFrom($fromEmail, "1 an à Berlin newsletter");
+        
+        $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($to);
-
+        
         if ($unsubscribe_link) {
             $mail->addCustomHeader('List-Unsubscribe', "<{$unsubscribe_link}>, <mailto:contact@nathanaelle.org?subject=unsubscribe>");
         }

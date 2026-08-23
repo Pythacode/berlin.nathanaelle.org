@@ -24,7 +24,7 @@ function envoyerMailErreur($message) {
     error_log($message);
     $body = $message . "<br><br>URL : " . ($_SERVER['REQUEST_URI'] ?? 'N/A')
           . "<br>Date : " . date('Y-m-d H:i:s');
-    send_mail($body, [], $subject, $to, "alertes");
+    send_mail($body, [], $subject, $to, "alertes", "alertes érreurs de code");
 }
 
 register_shutdown_function(function() {

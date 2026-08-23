@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             '{{MDP_LINK}}' => '/'.$token,
         ];
             
-        send_mail($template, $variables, "Réinitialisation du mdp.", $row["email"], "comptes");
+        send_mail($template, $variables, "Réinitialisation du mdp", $user["email"], "comptes", "Comptes - 1 an à Berlin");
     }
     ?>
     <!DOCTYPE html>

@@ -207,7 +207,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     '{{IMG_DATA}}' => $img_data,
                 ];
                 
-                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
+                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", "Newsletter - 1 an à Berlin", $unsubscribe_link);
                 
             }
 
@@ -224,7 +224,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     '{{IMG_DATA}}' => $img_data,
                     ];
                     
-                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", $unsubscribe_link);
+                send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $row["email"], "newsletter", "Newsletter - 1 an à Berlin", $unsubscribe_link);
             }
             
         }

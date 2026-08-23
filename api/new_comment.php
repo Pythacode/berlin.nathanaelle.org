@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         '{{COMMENT}}' => $comment,
     ];
     
-    send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $userPostMail, "newsletter");
+    send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $userPostMail, "newsletter", "Comentaires - 1 an à Berlin");
     
 
     $stmt = $conn->prepare("SELECT * FROM comments WHERE id_post = ?");
