@@ -428,7 +428,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $new = $_POST['new'] == "on" ? 1 : 0;
 
         $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`, `type`) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("siisis", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"], $type);
+        $stmt->bind_param("siisis", basename($path), $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"], $type);
 
         $stmt->execute();
 
@@ -438,7 +438,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         if ($new) {
         
-            $img_data = resizeImageToBase64($AbsoluteUploadDir . $file, 600, 600, 80);
+            $img_data = resizeImageToBase64($path, 600, 600, 80);
             
             $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
             
