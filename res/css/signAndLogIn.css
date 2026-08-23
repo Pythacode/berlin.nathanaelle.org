@@ -90,6 +90,13 @@ input:autofill {
   box-shadow: 0 0 0 1000px var(--hover-color) inset !important;
 }
 
+#username[readonly] {
+    display: inline !important;
+    &:hover {
+        background-color: initial !important;
+    }
+}
+
 #error {
     color:rgb(255, 77, 41);
     text-decoration: underline;

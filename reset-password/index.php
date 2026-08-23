@@ -82,7 +82,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                 <main>
                 <span id="error" style="display: none;"></span>
                 <form action="/reset-password/" method="post" id="form">
-                    <p>Nom d'utilisateur : <?php echo $user["username"]; ?></p>
+                    <p>
+                        Nom d'utilisateur :
+                        <input type="text" id="username" name="username" autocomplete="username" value="<?php echo $user["username"]; ?>" readonly>
+                    </p>
 
                     <label for="password">Nouveau mot de passe :</label>
                     <div class="input-password">
@@ -97,10 +100,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
                     </div>
 
                     <input type="submit" value="Valider">
-                    <input type="hidden" name="redirect" value="<?= htmlspecialchars($_GET['redirect'] ?? '/') ?>">
+                    <input type="hidden" name="token" value="<?php echo $_GET['token'] ?>">
                     
                 </form>
-                <p>Déjà inscrit.e ? <a href="/login/?redirect=<?= htmlspecialchars($_GET['redirect'] ?? '/') ?>">Connection</a></p>
                 </main>
                 <footer></footer>
             </body>
@@ -115,12 +117,12 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
 } elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-
     $stmt = $conn->prepare("SELECT * FROM `reset_password_requests` WHERE `token` = ?");
-    $stmt->bind_param("s", $token);
+    $stmt->bind_param("s", $_POST["token"]);
 
+    
     $stmt->execute();   
-
+    
     $result = $stmt->get_result();
     $requete = $result->fetch_assoc();
     $stmt->close();
@@ -132,8 +134,14 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
     $stmt->execute();
 
-    $id = $conn->insert_id;
-    
+    $stmt->close();
+
+    # Supression
+    $stmt = $conn->prepare("DELETE FROM `reset_password_requests` WHERE `token`=?");
+    $stmt->bind_param("s", $_POST["token"]);
+
+    $stmt->execute();
+
     $stmt->close();
 
     $conn->close();
