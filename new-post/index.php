@@ -39,106 +39,335 @@ function autoOrient(Imagick $image, string $filepath): void {
 }
 
 function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
+    if (!file_exists($path)) {
+        throw new Exception("Fichier introuvable.");
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($path);
+
+    /*
+     * =========================
+     * VIDEO WEBM
+     * =========================
+     */
+    if ($mime === 'video/webm') {
+
+        $tmpImage = tempnam(sys_get_temp_dir(), 'webm_preview_') . '.jpg';
+
+        $cmd = sprintf(
+            'ffmpeg -y -i %s -frames:v 1 -q:v 2 %s 2>&1',
+            escapeshellarg($path),
+            escapeshellarg($tmpImage)
+        );
+
+        exec($cmd, $output, $returnCode);
+
+        if ($returnCode !== 0 || !file_exists($tmpImage)) {
+            @unlink($tmpImage);
+
+            throw new Exception(
+                "Impossible d'extraire la miniature du WebM."
+            );
+        }
+
+        $path = $tmpImage;
+        $deleteTmp = true;
+
+    } else {
+        $deleteTmp = false;
+
+        if (!str_starts_with($mime, 'image/')) {
+            throw new Exception("Type de fichier non supporté : " . $mime);
+        }
+    }
+
+    /*
+     * =========================
+     * IMAGE / FRAME WEBM
+     * =========================
+     */
+
     if (!extension_loaded('imagick')) {
+        if ($deleteTmp) {
+            @unlink($path);
+        }
+
         throw new Exception("Extension Imagick non disponible.");
     }
 
     $img = new Imagick($path);
 
-    // Corrige l'orientation EXIF si présente (gère aussi le cas où webp n'en a pas)
-    //$img->autoOrientImage();
-    autoOrient($img,$path);
+    autoOrient($img, $path);
 
-    // Aplati les frames (webp animé) sur la première frame
+    // Première frame pour les images animées
     if ($img->getNumberImages() > 1) {
         $img = $img->coalesceImages();
-        $img = $img->getImage(); // ne garde que la première frame
+        $img->setIteratorIndex(0);
     }
 
     $origWidth  = $img->getImageWidth();
     $origHeight = $img->getImageHeight();
 
-    // Ratio de redimensionnement (ne pas agrandir si déjà petite)
-    $ratio = min($maxWidth / $origWidth, $maxHeight / $origHeight, 1);
+    $ratio = min(
+        $maxWidth / $origWidth,
+        $maxHeight / $origHeight,
+        1
+    );
+
     $newWidth  = (int) round($origWidth * $ratio);
     $newHeight = (int) round($origHeight * $ratio);
 
-    $img->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+    $img->resizeImage(
+        $newWidth,
+        $newHeight,
+        Imagick::FILTER_LANCZOS,
+        1
+    );
 
-    // Préserve la transparence si présente
+    /*
+     * Transparence
+     */
     $hasAlpha = $img->getImageAlphaChannel();
 
     if ($hasAlpha) {
         $img->setImageFormat('png');
-        $img->setImageCompressionQuality(80); // ignoré par PNG mais inoffensif
         $outMime = 'image/png';
     } else {
         $img->setImageFormat('jpeg');
         $img->setImageCompressionQuality($quality);
         $img->setImageBackgroundColor('white');
-        $img = $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+
+        $img = $img->mergeImageLayers(
+            Imagick::LAYERMETHOD_FLATTEN
+        );
+
         $outMime = 'image/jpeg';
     }
 
-    // Nettoie les métadonnées EXIF restantes (poids + vie privée)
     $img->stripImage();
 
     $data = $img->getImageBlob();
+
+    $img->clear();
     $img->destroy();
 
-    $base64 = base64_encode($data);
-    return "data:{$outMime};base64,{$base64}";
+    if ($deleteTmp) {
+        @unlink($path);
+    }
+
+    return "data:{$outMime};base64," . base64_encode($data);
 }
 
 function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
     $mime = mime_content_type($srcPath);
-    
-    $img = new Imagick($srcPath);
-    //$img->autoOrientImage();
-    autoOrient($img,$srcPath);
-    // Calcul des nouvelles dimensions
-    $origWidth = $img->getImageWidth();
-    $origHeight = $img->getImageHeight();
-    
-    if ($origWidth <= $maxWidth) {
-        $newWidth = $origWidth;
-        $newHeight = $origHeight;
-    } else {
-        $newWidth = $maxWidth;
-        $newHeight = (int) round($origHeight * ($maxWidth / $origWidth));
+
+    // Retirer l'ancienne extension du chemin
+    $destPath = pathinfo($destPath, PATHINFO_DIRNAME) . '/' .
+                pathinfo($destPath, PATHINFO_FILENAME);
+
+    /*
+     * =========================
+     * IMAGE
+     * =========================
+     */
+    if (str_starts_with($mime, 'image/')) {
+
+        $destPath .= '.webp';
+
+        $img = new Imagick($srcPath);
+
+        autoOrient($img, $srcPath);
+
+        $origWidth  = $img->getImageWidth();
+        $origHeight = $img->getImageHeight();
+
+        if ($origWidth <= $maxWidth) {
+            $newWidth  = $origWidth;
+            $newHeight = $origHeight;
+        } else {
+            $newWidth  = $maxWidth;
+            $newHeight = (int) round(
+                $origHeight * ($maxWidth / $origWidth)
+            );
+        }
+
+        $img->thumbnailImage($newWidth, $newHeight);
+
+        $img->setImageFormat('webp');
+        $img->setImageCompressionQuality($quality);
+        $img->writeImage($destPath);
+
+        $img->clear();
+        $img->destroy();
+
+        return $destPath;
     }
-    
-    // Redimensionnement avec filtrage de haute qualité
-    $img->thumbnailImage($newWidth, $newHeight);
-    
-    // Conversion explicite en WebP pour la sortie
-    $img->setImageFormat('webp');
-    $img->setImageCompressionQuality($quality);
-    
-    // Sauvegarde
-    $img->writeImage($destPath);
-    $img->clear();
-    $img->destroy();
-    
-    return $destPath;
+
+    /*
+     * =========================
+     * VIDEO
+     * =========================
+     */
+    if (str_starts_with($mime, 'video/')) {
+
+        $destPath .= '.webm';
+
+        $cmd = sprintf(
+            'ffprobe -v error -select_streams v:0 ' .
+            '-show_entries stream=width,height ' .
+            '-of csv=p=0:s=x %s 2>&1',
+            escapeshellarg($srcPath)
+        );
+
+        $dimensions = trim(shell_exec($cmd));
+
+        if (!preg_match('/^(\d+)x(\d+)$/', $dimensions, $matches)) {
+            throw new Exception("Impossible de récupérer les dimensions de la vidéo.");
+        }
+
+        $origWidth  = (int) $matches[1];
+        $origHeight = (int) $matches[2];
+
+        if ($origWidth <= $maxWidth) {
+            $newWidth  = $origWidth;
+            $newHeight = $origHeight;
+        } else {
+            $newWidth  = $maxWidth;
+            $newHeight = (int) round(
+                $origHeight * ($maxWidth / $origWidth)
+            );
+        }
+
+        // Dimensions paires
+        $newWidth  -= $newWidth % 2;
+        $newHeight -= $newHeight % 2;
+
+        // 75 => CRF ~25
+        $crf = (int) round(40 - ($quality * 0.2));
+        $crf = max(10, min(40, $crf));
+
+        $cmd = sprintf(
+            'ffmpeg -y -i %s ' .
+            '-vf %s ' .
+            '-c:v libvpx-vp9 ' .
+            '-crf %d -b:v 0 ' .
+            '-c:a libopus -b:a 128k ' .
+            '%s 2>&1',
+            escapeshellarg($srcPath),
+            escapeshellarg("scale={$newWidth}:{$newHeight}"),
+            $crf,
+            escapeshellarg($destPath)
+        );
+
+        exec($cmd, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            throw new Exception(
+                "Erreur FFmpeg :\n" . implode("\n", $output)
+            );
+        }
+
+        return $destPath;
+    }
+
+    throw new Exception("Type de fichier non supporté : " . $mime);
 }
 
-function rotate($img_path, $rotate) {
-    $img = new Imagick($img_path);
 
-    $img->rotateImage('none', $rotate);
-    
-    $img->resetIterator();
+function rotate($filePath, $rotate) {
+    $mime = mime_content_type($filePath);
 
-    // 5. Définir le format de sortie sur WebP
-    $img->setImageFormat('webp');
+    /*
+     * =========================
+     * IMAGE
+     * =========================
+     */
+    if (str_starts_with($mime, 'image/')) {
 
-    // 6. Sauvegarder le résultat
-    $img->writeImage($img_path);
+        $img = new Imagick($filePath);
 
-    // 7. Nettoyage mémoire
-    $img->clear();
-    $img->destroy();
+        $img->rotateImage('none', $rotate);
+
+        $img->setImageFormat('webp');
+
+        $img->writeImage($filePath);
+
+        $img->clear();
+        $img->destroy();
+
+        return $filePath;
+    }
+
+    /*
+     * =========================
+     * VIDEO
+     * =========================
+     */
+    if (str_starts_with($mime, 'video/')) {
+
+        $tempPath = $filePath . '.tmp.webm';
+
+        /*
+         * FFmpeg :
+         * 90°  -> transpose=1
+         * 180° -> hflip,vflip
+         * 270° -> transpose=2
+         */
+        $angle = (($rotate % 360) + 360) % 360;
+
+        switch ($angle) {
+            case 90:
+                $filter = 'transpose=1';
+                break;
+
+            case 180:
+                $filter = 'hflip,vflip';
+                break;
+
+            case 270:
+                $filter = 'transpose=2';
+                break;
+
+            case 0:
+                return $filePath;
+
+            default:
+                // Rotation arbitraire
+                $filter = 'rotate=' . deg2rad($angle) .
+                          ':fillcolor=black';
+                break;
+        }
+
+        $cmd = sprintf(
+            'ffmpeg -y -i %s ' .
+            '-vf %s ' .
+            '-c:v libvpx-vp9 ' .
+            '-crf 25 -b:v 0 ' .
+            '-c:a libopus -b:a 128k ' .
+            '%s 2>&1',
+            escapeshellarg($filePath),
+            escapeshellarg($filter),
+            escapeshellarg($tempPath)
+        );
+
+        exec($cmd, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            @unlink($tempPath);
+
+            throw new Exception(
+                "Erreur FFmpeg :\n" . implode("\n", $output)
+            );
+        }
+
+        // Remplacer l'original
+        rename($tempPath, $filePath);
+
+        return $filePath;
+    }
+
+    throw new Exception("Type de fichier non supporté : " . $mime);
 }
 
 if (!isset($_SESSION['id'])) {
@@ -167,20 +396,39 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             mkdir($AbsoluteUploadDir, 0755, true);
         }
 
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($_FILES['photo']['tmp_name']);
+
+        if (str_starts_with($mime, 'image/')) {
+            $type = 'img';
+        
+        } elseif (str_starts_with($mime, 'video/')) {
+            $type = 'video';
+        }
+
         $infos = pathinfo($_FILES['photo']['name']);
         $filename = $infos['filename'] . '_';
-        $extension = $infos['extension'];
-        
-        $file = uniqid($filename) . ".webp";
 
-        resizeAndSave($_FILES['photo']['tmp_name'], $AbsoluteUploadDir . $file, 800, 75);
-        
-        rotate($AbsoluteUploadDir . $file, $_POST["rotate"]);
+        $file = uniqid($filename);
+
+        $path = resizeAndSave(
+            $_FILES['photo']['tmp_name'],
+            $AbsoluteUploadDir . $file,
+            800,
+            75
+        );
+
+        rotate(
+            $path,
+            (int)($_POST["rotate"] ?? 0)
+        );
+
 
         $new = $_POST['new'] == "on" ? 1 : 0;
 
-        $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("siisi", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"]);
+        $stmt = $conn->prepare("INSERT INTO `posts` (`picture_name`, `width`, `height`, `description`, `user_id`, `type`) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("siisis", $file, $_POST['width'], $_POST['height'], $_POST['description'], $_SESSION["id"], $type);
 
         $stmt->execute();
 
