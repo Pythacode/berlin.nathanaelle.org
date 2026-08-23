@@ -58,13 +58,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $stmt->execute();
         
         $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/new_password.html');
-        // (`username`, `password`, `email`, `news`)
+        
         $variables = [
             '{{USERNAME}}' => $row["username"],
             '{{MDP_LINK}}' => '/'.$token,
         ];
             
-        send_mail($template, $variables, "Réinitialisation du mdp.", $row["email"], "newsletter", $unsubscribe_link);
+        send_mail($template, $variables, "Réinitialisation du mdp.", $row["email"], "comptes");
     }
     ?>
     <!DOCTYPE html>
@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         <h1>Mot de passe / Nom d'utilisateur oublié</h1>
         </header>
         <main>
-            <p>Si l'email fourni est rataché à un conte, vous recevrez dans quelques instant un mail avec la procédure à suivre.</p>
+            <p>Si l'email fourni est rataché à un comte, vous recevrez dans quelques instant un mail avec la procédure à suivre.</p>
         </main>
         <footer></footer>
     </body>
