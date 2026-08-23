@@ -93,5 +93,13 @@ input:autofill {
 #error {
     color:rgb(255, 77, 41);
     text-decoration: underline;
-    
+}
+
+p.infos {
+    color: rgb(177, 177, 177);
+    & a {
+        color:rgb(177, 177, 177);
+    }
+    user-select: none;
+    margin-top: 0;
 }
