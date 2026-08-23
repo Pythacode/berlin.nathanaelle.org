@@ -158,11 +158,13 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
 
     return "data:{$outMime};base64," . base64_encode($data);
 }
-
 function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
+    if (!extension_loaded('imagick')) {
+        throw new Exception("Extension Imagick non disponible.");
+    }
+
     $mime = mime_content_type($srcPath);
 
-    // Retirer l'ancienne extension du chemin
     $destPath = pathinfo($destPath, PATHINFO_DIRNAME) . '/' .
                 pathinfo($destPath, PATHINFO_FILENAME);
 
@@ -182,17 +184,14 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
         $origWidth  = $img->getImageWidth();
         $origHeight = $img->getImageHeight();
 
-        if ($origWidth <= $maxWidth) {
-            $newWidth  = $origWidth;
-            $newHeight = $origHeight;
-        } else {
+        if ($origWidth > $maxWidth) {
             $newWidth  = $maxWidth;
             $newHeight = (int) round(
                 $origHeight * ($maxWidth / $origWidth)
             );
-        }
 
-        $img->thumbnailImage($newWidth, $newHeight);
+            $img->thumbnailImage($newWidth, $newHeight);
+        }
 
         $img->setImageFormat('webp');
         $img->setImageCompressionQuality($quality);
@@ -206,176 +205,94 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
 
     /*
      * =========================
-     * VIDEO
+     * VIDEO WEBM
      * =========================
      */
-    if (str_starts_with($mime, 'video/')) {
+    if ($mime === 'video/webm') {
 
         $destPath .= '.webm';
 
-        $cmd = sprintf(
-            'ffprobe -v error -select_streams v:0 ' .
-            '-show_entries stream=width,height ' .
-            '-of json %s 2>&1',
-            escapeshellarg($srcPath)
-        );
+        $video = new Imagick($srcPath);
 
-        $output = shell_exec($cmd);
+        $origWidth  = $video->getImageWidth();
+        $origHeight = $video->getImageHeight();
 
-        $data = json_decode($output, true);
-
-        if (
-            !isset($data['streams'][0]['width']) ||
-            !isset($data['streams'][0]['height'])
-        ) {
-            throw new Exception(
-                "Impossible de récupérer les dimensions de la vidéo.\n" .
-                "ffprobe : " . $output
-            );
-        }
-
-        $origWidth  = (int) $data['streams'][0]['width'];
-        $origHeight = (int) $data['streams'][0]['height'];
-
-        if ($origWidth <= $maxWidth) {
-            $newWidth  = $origWidth;
-            $newHeight = $origHeight;
-        } else {
+        if ($origWidth > $maxWidth) {
             $newWidth  = $maxWidth;
             $newHeight = (int) round(
                 $origHeight * ($maxWidth / $origWidth)
             );
+
+            /*
+             * Redimensionne toutes les frames
+             */
+            foreach ($video as $frame) {
+                $frame->thumbnailImage(
+                    $newWidth,
+                    $newHeight
+                );
+            }
         }
 
-        // Dimensions paires
-        $newWidth  -= $newWidth % 2;
-        $newHeight -= $newHeight % 2;
+        $video->setImageFormat('webm');
+        $video->setImageCompressionQuality($quality);
 
-        // 75 => CRF ~25
-        $crf = (int) round(40 - ($quality * 0.2));
-        $crf = max(10, min(40, $crf));
+        $video->writeImages($destPath, true);
 
-        $cmd = sprintf(
-            'ffmpeg -y -i %s ' .
-            '-vf %s ' .
-            '-c:v libvpx-vp9 ' .
-            '-crf %d -b:v 0 ' .
-            '-c:a libopus -b:a 128k ' .
-            '%s 2>&1',
-            escapeshellarg($srcPath),
-            escapeshellarg("scale={$newWidth}:{$newHeight}"),
-            $crf,
-            escapeshellarg($destPath)
-        );
-
-        exec($cmd, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            throw new Exception(
-                "Erreur FFmpeg :\n" . implode("\n", $output)
-            );
-        }
+        $video->clear();
+        $video->destroy();
 
         return $destPath;
     }
 
-    throw new Exception("Type de fichier non supporté : " . $mime);
+    throw new Exception(
+        "Type de fichier non supporté : " . $mime
+    );
 }
 
 
 function rotate($filePath, $rotate) {
+    if (!extension_loaded('imagick')) {
+        throw new Exception("Extension Imagick non disponible.");
+    }
+
     $mime = mime_content_type($filePath);
 
+    $rotate = (float) $rotate;
+
+    if ($rotate == 0) {
+        return $filePath;
+    }
+
+    $img = new Imagick($filePath);
+
     /*
-     * =========================
-     * IMAGE
-     * =========================
+     * Vidéo = plusieurs frames
+     * Image = une seule frame
      */
-    if (str_starts_with($mime, 'image/')) {
+    foreach ($img as $frame) {
+        $frame->rotateImage('none', $rotate);
+    }
 
-        $img = new Imagick($filePath);
-
-        $img->rotateImage('none', $rotate);
-
+    if ($mime === 'video/webm') {
+        $img->setImageFormat('webm');
+        $img->writeImages($filePath, true);
+    } elseif (str_starts_with($mime, 'image/')) {
         $img->setImageFormat('webp');
-
         $img->writeImage($filePath);
-
+    } else {
         $img->clear();
         $img->destroy();
 
-        return $filePath;
-    }
-
-    /*
-     * =========================
-     * VIDEO
-     * =========================
-     */
-    if (str_starts_with($mime, 'video/')) {
-
-        $tempPath = $filePath . '.tmp.webm';
-
-        /*
-         * FFmpeg :
-         * 90°  -> transpose=1
-         * 180° -> hflip,vflip
-         * 270° -> transpose=2
-         */
-        $angle = (($rotate % 360) + 360) % 360;
-
-        switch ($angle) {
-            case 90:
-                $filter = 'transpose=1';
-                break;
-
-            case 180:
-                $filter = 'hflip,vflip';
-                break;
-
-            case 270:
-                $filter = 'transpose=2';
-                break;
-
-            case 0:
-                return $filePath;
-
-            default:
-                // Rotation arbitraire
-                $filter = 'rotate=' . deg2rad($angle) .
-                          ':fillcolor=black';
-                break;
-        }
-
-        $cmd = sprintf(
-            'ffmpeg -y -i %s ' .
-            '-vf %s ' .
-            '-c:v libvpx-vp9 ' .
-            '-crf 25 -b:v 0 ' .
-            '-c:a libopus -b:a 128k ' .
-            '%s 2>&1',
-            escapeshellarg($filePath),
-            escapeshellarg($filter),
-            escapeshellarg($tempPath)
+        throw new Exception(
+            "Type de fichier non supporté : " . $mime
         );
-
-        exec($cmd, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            @unlink($tempPath);
-
-            throw new Exception(
-                "Erreur FFmpeg :\n" . implode("\n", $output)
-            );
-        }
-
-        // Remplacer l'original
-        rename($tempPath, $filePath);
-
-        return $filePath;
     }
 
-    throw new Exception("Type de fichier non supporté : " . $mime);
+    $img->clear();
+    $img->destroy();
+
+    return $filePath;
 }
 
 if (!isset($_SESSION['id'])) {
