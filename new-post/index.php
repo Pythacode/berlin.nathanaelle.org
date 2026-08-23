@@ -208,7 +208,7 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
      * VIDEO WEBM
      * =========================
      */
-    if ($mime === 'video/webm') {
+    if (str_starts_with($mime, 'video/')) {
 
         $destPath .= '.webm';
 
