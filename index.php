@@ -204,7 +204,7 @@ while ($row = $result->fetch_assoc()) {
                 <span id="date"></span>
               </div>
             </div>
-            <div class="desc" id="desc"></div>
+            <div class="desc ql-editor" id="desc"></div>
             <hr>
             <div class="comments" id="comments"></div>
             <form action="/api/new_comment/" method="post" class="comment" id="comment-form">
