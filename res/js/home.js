@@ -1,7 +1,8 @@
 const images = document.querySelectorAll('img.picture');
 const overlay = document.getElementById('overlay');
 const fenetreModal = document.getElementById('fenetreModal');
-const visualiseur = document.getElementById('visualiseur');
+const visualiseurImg = document.getElementById('visualiseur-img');
+const visualiseurVideo = document.getElementById('visualiseur-video');
 const quitIcon = document.getElementById('quitIcon');
 
 const heart = document.getElementById('heart')
@@ -60,17 +61,28 @@ function show_comment(comments) {
 async function display_post(id) {
 
   const img = document.getElementById(id)
-
+  
   if (!img) {
     return
   }
-
+  
   history.replaceState(null, '', '/?post=' + img.id);
 
   post_login_link.href = `/login/?redirect=${encodeURIComponent('/?post=' + img.id)}`;
   post_signin_link.href = `/signin/?redirect=${encodeURIComponent('/?post=' + img.id)}`;
 
-  visualiseur.src = img.getAttribute('src');
+
+  if (img.tagName == "IMG") {
+    visualiseurImg.src = img.getAttribute('src');
+    visualiseurImg.style.display = 'block';
+    visualiseurVideo.style.display = 'none';
+  } else if (img.tagName == "VIDEO") {
+    visualiseurImg.style.display = 'none';
+    visualiseurVideo.style.display = 'block';
+    visualiseurVideo.src = img.getAttribute('src');
+  }
+
+  
   try {
       const response = await fetch('/api/post.php', {
       method: 'POST',

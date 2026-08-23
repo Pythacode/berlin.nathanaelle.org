@@ -20,6 +20,7 @@ while ($row = $result->fetch_assoc()) {
     <link rel="stylesheet" href="/res/css/home.css">
     <link rel="stylesheet" href="/res/css/index.css">
     <script src="/res/js/home.js" defer></script>
+    <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script defer src="https://statistiques.nathanaelle.org/script.js" data-website-id="5ad832be-2b05-4147-ac62-b9978d41105a"></script>
     <style>
@@ -177,7 +178,9 @@ while ($row = $result->fetch_assoc()) {
               if ($row["type"] == "img") {
                 echo "<img id=\"" . $row["id"] . "\" src=\"/res/data/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
               } else if ($row['type'] == "video") {
+                echo '<div class="video-container">';
                 echo "<video id=\"" . $row["id"] . "\" src=\"/res/data/videos/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\" controls></video>";
+                echo '<button class="video-action" type="button" title="Ouvrir les commentaires" onclick="display_post(' . $row["id"] . ')">⎋</button></div>';
               } else {
               }
             }
@@ -188,7 +191,8 @@ while ($row = $result->fetch_assoc()) {
         <div class="overlay" id="overlay"></div>
         <svg xmlns="http://www.w3.org/2000/svg" height="30px" viewBox="0 -960 960 960" width="30px" fill="#FFFFFF" id="quitIcon"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"></path></svg>
         <div class="fenetreModal" id="fenetreModal">
-          <img src="" id="visualiseur">
+          <img src="" id="visualiseur-img">
+          <video src="" id="visualiseur-video" controls></video>
           <div class="img_info">
             <div class="info likes">
               <svg id="heart" width="53.448mm" height="47.716mm" height="30px" viewBox="0 0 53.448 47.716" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-104.53 -34.333)"><path d="m118.65 34.833c-2.0883 2e-3 -4.1644 0.54545-6.1015 1.6676-9.7787 6.6921-8.3244 15.448-5.0486 20.855 1.9282 4.0135 20.082 17.597 23.756 23.721 3.6737-6.1241 21.828-19.708 23.756-23.721 3.2758-5.407 4.7301-14.163-5.0486-20.855-6.1989-3.5909-13.822-1.256-18.708 5.7842-3.359-4.8402-8.0117-7.4562-12.606-7.4518z" fill="none" stroke="#fff"/></g></svg>

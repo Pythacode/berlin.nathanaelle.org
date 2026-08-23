@@ -79,7 +79,8 @@ main {
     overflow: auto;
 }
 
-#fenetreModal img {
+#fenetreModal img,
+#fenetreModal video {
     padding: 10px;
     width: 90%;
 }
@@ -216,5 +217,28 @@ footer {
 @media (max-width: 480px) {
     #fenetreModal {
         width: 90vw;
+    }
+}
+
+.video-container {
+  position: relative;
+}
+
+.video-action {
+    transform: scaleX(-1);
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    height: 2.5rem;
+    width: 2.5rem;
+    font-size: 2rem;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.27);
+    color: white;
+    cursor: pointer;
+    transition-duration: 500ms;
+    &:hover {
+        background-color: black;
     }
 }
