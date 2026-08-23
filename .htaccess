@@ -3,4 +3,8 @@ ErrorDocument 500 /error_pages/500.php
 
 RewriteEngine On
 
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} ^/res/data/pictures/.*\.(jpg|jpeg|png|gif|webp|avif|svg)$ [NC]
+RewriteRule ^ /res/img/oups.png [L]
+
 RewriteRule ^reset-password/(.*)$ reset-password/index.php?token=$1 [L,QSA]
