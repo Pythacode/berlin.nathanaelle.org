@@ -402,10 +402,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         if (str_starts_with($mime, 'image/')) {
             $type = 'img';
-            $AbsoluteUploadDir .= "pictures";
+            $AbsoluteUploadDir .= "pictures/";
         } elseif (str_starts_with($mime, 'video/')) {
             $type = 'video';
-            $AbsoluteUploadDir .= "videos";
+            $AbsoluteUploadDir .= "videos/";
         }
 
         $infos = pathinfo($_FILES['photo']['name']);
