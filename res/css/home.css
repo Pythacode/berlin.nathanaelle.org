@@ -64,6 +64,7 @@ main {
 }
 
 #fenetreModal {
+    height: 90vh;
     width: 35vw;
     z-index:99999;
     display:none;
@@ -203,6 +204,10 @@ form.comment {
         border: none;
         cursor: pointer;
     }
+}
+
+.desc {
+    overflow-y: none !important;
 }
 
 .desc p {
