@@ -2,7 +2,7 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 
-$posts = $conn->query("SELECT `id`, `picture_name`, `width`, `height`, `user_id` FROM `posts` ORDER BY `created_at` DESC");
+$posts = $conn->query("SELECT * FROM `posts` ORDER BY `created_at` DESC");
 $users = [];
 
 $result = $conn->query("SELECT `id`, `username`, `color` FROM `users` WHERE admin = 1");
@@ -175,11 +175,10 @@ while ($row = $result->fetch_assoc()) {
           } else {
             foreach ($posts as $row) {
               if ($row["type"] == "img") {
-                echo "<img id=\"" . $row["id"] . "\" src=\"/res/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
+                echo "<img id=\"" . $row["id"] . "\" src=\"/res/data/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\">";
               } else if ($row['type'] == "video") {
-                echo "<video id=\"" . $row["id"] . "\" src=\"/res/video/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\" controls></video>";
+                echo "<video id=\"" . $row["id"] . "\" src=\"/res/data/videos/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $users[$row["user_id"]][0] . "\" loading=\"lazy\" controls></video>";
               } else {
-                echo $row["type"];
               }
             }
           }
