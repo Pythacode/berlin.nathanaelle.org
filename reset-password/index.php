@@ -35,8 +35,7 @@ function display_error($error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
-    $token = $_GET["token"];
-
+    $token = urldecode($_GET["token"]);
 
     $stmt = $conn->prepare("SELECT * FROM `reset_password_requests` WHERE `token` = ?");
     $stmt->bind_param("s", $token);

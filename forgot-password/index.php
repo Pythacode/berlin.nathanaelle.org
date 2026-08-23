@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         
         $variables = [
             '{{USERNAME}}' => $user["username"],
-            '{{MDP_LINK}}' => 'https://berlin.nathanaelle.org/reset-password/token/'.$token,
+            '{{MDP_LINK}}' => 'https://berlin.nathanaelle.org/reset-password/'.urlencode($token),
         ];
             
         send_mail($template, $variables, "Réinitialisation du mdp", $user["email"], "comptes", "Comptes - 1 an à Berlin");
