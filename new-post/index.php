@@ -388,7 +388,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
     if (isset($_FILES['photo']['tmp_name'])) {
 
-        $RelativeUploadDir = "/res/pictures/";
+        $RelativeUploadDir = "/res/data/";
 
         $AbsoluteUploadDir = $_SERVER['DOCUMENT_ROOT'] . $RelativeUploadDir;
 
@@ -402,9 +402,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         if (str_starts_with($mime, 'image/')) {
             $type = 'img';
-        
+            $AbsoluteUploadDir .= "pictures";
         } elseif (str_starts_with($mime, 'video/')) {
             $type = 'video';
+            $AbsoluteUploadDir .= "videos";
         }
 
         $infos = pathinfo($_FILES['photo']['name']);
