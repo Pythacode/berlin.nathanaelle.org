@@ -216,18 +216,26 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
         $cmd = sprintf(
             'ffprobe -v error -select_streams v:0 ' .
             '-show_entries stream=width,height ' .
-            '-of csv=p=0:s=x %s 2>&1',
+            '-of json %s 2>&1',
             escapeshellarg($srcPath)
         );
 
-        $dimensions = trim(shell_exec($cmd));
+        $output = shell_exec($cmd);
 
-        if (!preg_match('/^(\d+)x(\d+)$/', $dimensions, $matches)) {
-            throw new Exception("Impossible de récupérer les dimensions de la vidéo.");
+        $data = json_decode($output, true);
+
+        if (
+            !isset($data['streams'][0]['width']) ||
+            !isset($data['streams'][0]['height'])
+        ) {
+            throw new Exception(
+                "Impossible de récupérer les dimensions de la vidéo.\n" .
+                "ffprobe : " . $output
+            );
         }
 
-        $origWidth  = (int) $matches[1];
-        $origHeight = (int) $matches[2];
+        $origWidth  = (int) $data['streams'][0]['width'];
+        $origHeight = (int) $data['streams'][0]['height'];
 
         if ($origWidth <= $maxWidth) {
             $newWidth  = $origWidth;
