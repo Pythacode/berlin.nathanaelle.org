@@ -64,7 +64,6 @@ main {
 }
 
 #fenetreModal {
-    height: 90vh;
     width: 35vw;
     z-index:99999;
     display:none;
@@ -76,7 +75,7 @@ main {
     transform: translate(-50%,-50%);
     background-color: var(--background-color-secondary);
     border-radius: 10px;
-    max-height: 80vh;
+    max-height: 90vh;
     overflow: auto;
 }
 
@@ -207,7 +206,8 @@ form.comment {
 }
 
 .desc {
-    overflow-y: none !important;
+    overflow-y: unset !important;
+    height: unset !important;
 }
 
 .desc p {
