@@ -82,7 +82,7 @@ async function display_post(id) {
     visualiseurVideo.src = img.getAttribute('src');
   }
 
-  
+
   try {
       const response = await fetch('/api/post.php', {
       method: 'POST',
@@ -246,3 +246,22 @@ share.addEventListener('click', function(e) {
       console.error('Erreur lors de la copie :', err);
     });
 })
+
+const videos = document.querySelectorAll('video');
+
+// Fonction pour mettre en pause toutes les vidéos sauf une
+function pauseAllExcept(id) {
+    const v = document.getElementById(id)
+    videos.forEach((video) => {
+        if (v !== video) {
+            video.pause();
+        }
+    });
+}
+
+
+videos.forEach((video) => {
+    video.addEventListener('play', function() {
+        pauseAllExcept(video.id);
+    });
+});
