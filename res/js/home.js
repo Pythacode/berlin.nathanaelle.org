@@ -207,6 +207,8 @@ comment_form.addEventListener('submit', async (e) => {
 
   const comment = comment_form.comment.value.trim();
 
+  if (comment == '') {return}
+
   try {
     const response = await fetch('/api/new_comment.php', {
       method: 'POST',

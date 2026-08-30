@@ -15,42 +15,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $comment = $data['comment'];
     $postId = $data['post_id'];
 
-    $stmt = $conn->prepare("INSERT INTO `comments` (`id_post`, `id_user`, `comment`) VALUES (?, ?, ?)");
-    $stmt->bind_param("iis", $postId, $_SESSION['id'], $comment);
+        if ($comment != '') {
 
-    $stmt->execute();
-    $stmt->close();
+        $stmt = $conn->prepare("INSERT INTO `comments` (`id_post`, `id_user`, `comment`) VALUES (?, ?, ?)");
+        $stmt->bind_param("iis", $postId, $_SESSION['id'], $comment);
 
-    $stmt = $conn->prepare("SELECT `user_id` FROM posts WHERE id = ?");
-    $stmt->bind_param("i", $postId);
+        $stmt->execute();
+        $stmt->close();
 
-    $stmt->execute();
-    $stmt->bind_result($userPostId);
-    $stmt->fetch();
+        $stmt = $conn->prepare("SELECT `user_id` FROM posts WHERE id = ?");
+        $stmt->bind_param("i", $postId);
 
-    $stmt->close();
+        $stmt->execute();
+        $stmt->bind_result($userPostId);
+        $stmt->fetch();
 
-    $stmt = $conn->prepare("SELECT `email`, `username` FROM users WHERE id = ?");
-    $stmt->bind_param("i", $userPostId);
+        $stmt->close();
 
-    $stmt->execute();
-    $stmt->bind_result($userPostMail, $userPostUsername);
-    $stmt->fetch();
+        $stmt = $conn->prepare("SELECT `email`, `username` FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userPostId);
 
-    $stmt->close();
+        $stmt->execute();
+        $stmt->bind_result($userPostMail, $userPostUsername);
+        $stmt->fetch();
 
-    $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/new_comment.html');
+        $stmt->close();
+
+        $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/new_comment.html');
+        
+        $variables = [
+            '{{NAME}}' =>  $userPostUsername,
+            '{{USER}}' => $_SESSION['username'],
+            '{{POST_ID}}' => $postId,
+            '{{COMMENT}}' => $comment,
+        ];
+        
+        send_mail($template, $variables, "Nouveau commentaire sur 1 an à Berlin !", $userPostMail, "newsletter", "Comentaires - 1 an à Berlin");
     
-    $variables = [
-        '{{NAME}}' =>  $userPostUsername,
-        '{{USER}}' => $_SESSION['username'],
-        '{{POST_ID}}' => $postId,
-        '{{COMMENT}}' => $comment,
-    ];
-    
-    send_mail($template, $variables, "Nouveau post sur 1 an à Berlin !", $userPostMail, "newsletter", "Comentaires - 1 an à Berlin");
-    
-
+    }
     $stmt = $conn->prepare("SELECT * FROM comments WHERE id_post = ?");
     $stmt->bind_param("i", $postId);
     $stmt->execute();
