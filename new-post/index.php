@@ -376,7 +376,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
-        echo $_FILES['photo']['tmp_name'];
+        echo 'infos : "' . $_FILES['photo']['tmp_name'] . '"';
         $mime = $finfo->file($_FILES['photo']['tmp_name']);
 
         if (str_starts_with($mime, 'image/')) {
