@@ -63,11 +63,15 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
 
         exec($cmd, $output, $returnCode);
 
+        $fullOutput = implode("\n", $output);
+
         if ($returnCode !== 0 || !file_exists($tmpImage)) {
             @unlink($tmpImage);
 
             throw new Exception(
-                "Impossible d'extraire la miniature du WebM."
+                "Impossible d'extraire la miniature du WebM. " .
+                "Code de retour : $returnCode. " .
+                "Sortie complète de ffmpeg :\n$fullOutput"
             );
         }
 
