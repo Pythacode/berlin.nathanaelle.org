@@ -242,7 +242,7 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
             throw new Exception("La commande ffprobe a échoué ou a retourné une sortie vide.");
         }
 
-        if (!preg_match('/^(\d+)x(\d+)$/', $dimensions, $matches)) {
+        if (!preg_match('/^(\d+)x(\d+)x?$/', $dimensions, $matches)) {
             throw new Exception(
                 "Impossible de récupérer les dimensions de la vidéo. " .
                 "Sortie de ffprobe : " . $dimensions
