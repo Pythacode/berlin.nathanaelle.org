@@ -216,6 +216,13 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
         $ffprobe = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffprobe';
         $ffmpeg  = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffmpeg';
 
+        if (!file_exists($ffprobe)) {
+            throw new Exception("Le chemin vers ffprobe est invalide : " . $ffprobe);
+        }
+        if (!file_exists($ffmpeg)) {
+            throw new Exception("Le chemin vers ffmpeg est invalide : " . $ffmpeg);
+        }
+
         /*
          * Récupération des dimensions
          */
@@ -229,10 +236,16 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
 
         $dimensions = trim(shell_exec($cmd));
 
+        $dimensions = trim(shell_exec($cmd));
+
+        if (empty($dimensions)) {
+            throw new Exception("La commande ffprobe a échoué ou a retourné une sortie vide.");
+        }
+
         if (!preg_match('/^(\d+)x(\d+)$/', $dimensions, $matches)) {
             throw new Exception(
                 "Impossible de récupérer les dimensions de la vidéo. " .
-                "ffprobe : " . $dimensions
+                "Sortie de ffprobe : " . $dimensions
             );
         }
 
