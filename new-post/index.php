@@ -3,6 +3,16 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . "/config.php";
 require_once $_SERVER['DOCUMENT_ROOT'] . "/res/php/mail.php";
 
+$ffprobe = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffprobe';
+$ffmpeg  = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffmpeg';
+
+if (!file_exists($ffprobe)) {
+    throw new Exception("Le chemin vers ffprobe est invalide : " . $ffprobe);
+}
+if (!file_exists($ffmpeg)) {
+    throw new Exception("Le chemin vers ffmpeg est invalide : " . $ffmpeg);
+}
+
 function autoOrient(Imagick $image, string $filepath): void {
     $exif = @exif_read_data($filepath);
     if (!$exif || !isset($exif['Orientation'])) {
@@ -38,10 +48,13 @@ function autoOrient(Imagick $image, string $filepath): void {
     $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
 }
 
-function resizeImageToBase64($path, $ffmpeg, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
+function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
+    global $ffmpeg, $ffprobe;
+
     if (!file_exists($path)) {
         throw new Exception("Fichier introuvable.");
     }
+
 
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime = $finfo->file($path);
@@ -165,6 +178,9 @@ function resizeImageToBase64($path, $ffmpeg, $maxWidth = 600, $maxHeight = 600, 
     return "data:{$outMime};base64," . base64_encode($data);
 }
 function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
+    
+    global $ffmpeg, $ffprobe;
+
     if (!extension_loaded('imagick')) {
         throw new Exception("Extension Imagick non disponible.");
     }
@@ -218,16 +234,6 @@ function resizeAndSave($srcPath, $destPath, $maxWidth = 800, $quality = 75) {
     if (str_starts_with($mime, 'video/')) {
 
         $destPath .= '.webm';
-
-        $ffprobe = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffprobe';
-        $ffmpeg  = '/home/clients/13052a89d798e77978f601bcba7fa1ce/bin/ffmpeg-7.0.2-amd64-static/ffmpeg';
-
-        if (!file_exists($ffprobe)) {
-            throw new Exception("Le chemin vers ffprobe est invalide : " . $ffprobe);
-        }
-        if (!file_exists($ffmpeg)) {
-            throw new Exception("Le chemin vers ffmpeg est invalide : " . $ffmpeg);
-        }
 
         /*
          * Récupération des dimensions
@@ -395,7 +401,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
 
         $finfo = new finfo();
-        echo 'infos : "' . $_FILES['photo']['tmp_name'] . '"';
         $mime = $finfo->file($_FILES['photo']['tmp_name'], FILEINFO_MIME_TYPE);
 
         if (str_starts_with($mime, 'image/')) {
@@ -437,7 +442,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         if ($new) {
         
-            $img_data = resizeImageToBase64($path, $ffmpeg, 600, 600, 80);
+            $img_data = resizeImageToBase64($path, 600, 600, 80);
             
             $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
             
