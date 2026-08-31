@@ -437,7 +437,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         if ($new) {
         
-            $img_data = resizeImageToBase64($path, 600, 600, 80, $ffmpeg);
+            $img_data = resizeImageToBase64($path, $ffmpeg, 600, 600, 80);
             
             $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
             
