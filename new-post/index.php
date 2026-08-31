@@ -56,9 +56,10 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
         $tmpImage = tempnam(sys_get_temp_dir(), 'webm_preview_') . '.jpg';
 
         $cmd = sprintf(
-            $ffmpeg . ' -y -i %s -frames:v 1 -q:v 2 %s 2>&1',
-            escapeshellarg($path),
-            escapeshellarg($tmpImage)
+            '%s -y -i %s -frames:v 1 -q:v 2 %s 2>&1',  
+            escapeshellarg($ffmpeg),                  
+            escapeshellarg($path),                    
+            escapeshellarg($tmpImage)                 
         );
 
         exec($cmd, $output, $returnCode);
