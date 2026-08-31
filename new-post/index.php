@@ -38,7 +38,7 @@ function autoOrient(Imagick $image, string $filepath): void {
     $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
 }
 
-function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80, $ffmpeg) {
+function resizeImageToBase64($path, $ffmpeg, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
     if (!file_exists($path)) {
         throw new Exception("Fichier introuvable.");
     }
