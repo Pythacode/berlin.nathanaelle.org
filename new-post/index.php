@@ -38,7 +38,7 @@ function autoOrient(Imagick $image, string $filepath): void {
     $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
 }
 
-function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80) {
+function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality = 80, $ffmpeg) {
     if (!file_exists($path)) {
         throw new Exception("Fichier introuvable.");
     }
@@ -56,7 +56,7 @@ function resizeImageToBase64($path, $maxWidth = 600, $maxHeight = 600, $quality 
         $tmpImage = tempnam(sys_get_temp_dir(), 'webm_preview_') . '.jpg';
 
         $cmd = sprintf(
-            'ffmpeg -y -i %s -frames:v 1 -q:v 2 %s 2>&1',
+            $ffmpeg . ' -y -i %s -frames:v 1 -q:v 2 %s 2>&1',
             escapeshellarg($path),
             escapeshellarg($tmpImage)
         );
@@ -435,7 +435,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
         if ($new) {
         
-            $img_data = resizeImageToBase64($path, 600, 600, 80);
+            $img_data = resizeImageToBase64($path, 600, 600, 80, $ffmpeg);
             
             $template = file_get_contents($_SERVER['DOCUMENT_ROOT'] . '/res/mail-templates/news.html');
             
