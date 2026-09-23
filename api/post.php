@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt->close();
 
-    $stmt_user = $conn->prepare("SELECT id, username FROM users WHERE id = ?");
+    $stmt_user = $conn->prepare("SELECT username FROM users WHERE id = ?");
     $stmt_user->bind_param("i", $postUser_id);
     $stmt_user->execute();
 
@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     echo json_encode([
         'user' => $username,
-        'user_id' => $user['id'],
+        'user_id' => $postUser_id,
         'date' => $postDate->getTimestamp() * 1000,
         'desc' => $postDesc,
         'likes_count' => $countLike,
