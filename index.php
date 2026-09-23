@@ -26,9 +26,9 @@ while ($row = $result->fetch_assoc()) {
     <style>
       <?php 
         foreach ($users as $user) {
-            echo "." . $user[0] . " {border-radius: 5px;}";
-            echo "." . $user[0] . ":hover {box-shadow: 0 0 10px 1px " . $user[1] . ";}";
-            echo "." . $user[0] . "-overlay {box-shadow: 0 0 200px 10vh " . $user[1] . ";}";
+            echo ".user-" . $user[0] . " {border-radius: 5px;}";
+            echo ".user-" . $user[0] . ":hover {box-shadow: 0 0 10px 1px " . $user[1] . ";}";
+            echo ".user-" . $user[0] . "-overlay {box-shadow: 0 0 200px 10vh " . $user[1] . ";}";
         }
       ?>
     </style>
@@ -176,10 +176,10 @@ while ($row = $result->fetch_assoc()) {
           } else {
             foreach ($posts as $row) {
               if ($row["type"] == "img") {
-                echo "<img id=\"" . $row["id"] . "\" src=\"/res/data/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $row["user_id"] . "\" loading=\"lazy\">";
+                echo "<img id=\"" . $row["id"] . "\" src=\"/res/data/pictures/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " user-" . $row["user_id"] . "\" loading=\"lazy\">";
               } else if ($row['type'] == "video") {
                 echo '<div class="video-container">';
-                echo "<video id=\"" . $row["id"] . "\" src=\"/res/data/videos/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " " . $row["user_id"] . "\" loading=\"lazy\" controls></video>";
+                echo "<video id=\"" . $row["id"] . "\" src=\"/res/data/videos/" . htmlspecialchars($row["picture_name"]) . "\" class=\"picture line-" . $row["width"] . " row-" . $row["height"] . " user-" . $row["user_id"] . "\" loading=\"lazy\" controls></video>";
                 echo '<button class="video-action" type="button" title="Ouvrir les commentaires" onclick="display_post(' . $row["id"] . ')">⎋</button></div>';
               } else {
               }
